@@ -11,6 +11,7 @@ import com.xxxx.yygh.model.hosp.HospitalSet;
 import com.xxxx.yygh.vo.cmn.DictEeVo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,6 +34,8 @@ import java.util.List;
 public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements DictService {
 
     //根据id查询子数据列表
+    @Override
+    @Cacheable(value = "dict",keyGenerator = "keyGenerator") //缓存注解
     public List<Dict> findChildData(Long id) {
         QueryWrapper<Dict> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("parent_id",id);
@@ -55,6 +58,7 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
 
     //导入数据字典
     @Override
+    @CacheEvict(value = "dict", allEntries = true)
     public void importDict(MultipartFile file) {
         try {
             EasyExcel.read(file.getInputStream(),DictEeVo.class,new DictListener(baseMapper)).sheet().doRead();
